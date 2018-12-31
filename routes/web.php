@@ -11,6 +11,18 @@
 |
 */
 
+$html = <<<EOF
+<html>
+<head>
+<title>Hello</title>
+</head>
+</html>
+EOF;
+
+
 Route::get('/', function () {
     return view('welcome');
 });
+
+Route::get('hello/', 'HelloController@index');
+//Route::get('hello/other', 'HelloController@other');
