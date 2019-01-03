@@ -11,6 +11,9 @@
 |
 */
 
+use App\Http\Middleware\HelloMiddleware;
+
+
 $html = <<<EOF
 <html>
 <head>
@@ -24,5 +27,11 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('hello/', 'HelloController@index');
+//Route::get('hello/', function () {
+//    return view('hello.index');
+//});
+
+Route::get('hello', 'HelloController@index')
+    ->middleware('helo');
+Route::post('hello', 'HelloController@post');
 //Route::get('hello/other', 'HelloController@other');
