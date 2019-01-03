@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use App\Http\Requests\HelloRequest;
 use Validator;
+use Illuminate\Support\Facades\DB;
 
 function tag($tag, $txt) {
     return "<{$tag}>" . $txt . "</{$tag}>";
@@ -14,64 +15,68 @@ function tag($tag, $txt) {
 class HelloController extends Controller
 {
     public function index(Request $request) {
-//        $data = [1,2,3,4,5];
-//        $data = [
-//            ['name' => 'Yamada', 'mail' => 'y@gmail.com'],
-//            ['name' => 'Tanaka', 'mail' => 't@gmail.com'],
-//            ['name' => 'Suzuki', 'mail' => 's@gmail.com']
-//        ];
-//        $data = ['message' => 'hello'];
-        $validator = Validator::make($request->query(), [
-           'id' => 'required',
-           'pass' => 'required'
-        ]);
-
-        if ($validator->fails()) {
-            $msg = 'Query Error';
+        if (isset($request->id))
+        {
+            $param = ['id' => $request->id];
+            $items = DB::select('select * from people where id = :id', $param);
         } else {
-            $msg = 'Pass';
+            $items = DB::select('select * from people');
         }
-        return view('hello.index', ['msg' => $msg] );
+        return view('hello.index', ['items' => $items] );
     }
 
-    public function post(Request $request)
+    public function show(Request $request)
     {
-        $rules = [
-            'name' => 'required',
-            'mail' => 'email',
-            'age' => 'numeric|between:0,150'
+        $id = $request->id;
+        $items = DB::table('people')->where('id', '<=', $id)->get();
+        return view('hello.show', ['items' => $items]);
+    }
+
+    public function add(Request $request)
+    {
+        return view('hello.add');
+    }
+
+    public function create(Request $request)
+    {
+        $param = [
+            'name' => $request->name,
+            'mail' => $request->mail,
+            'age' => $request->age
         ];
 
-        $messages = [
-            'name.required' => '必須',
-            'mail.email' => '形式',
-            'age.numeric' => '数値',
-            'age.min' => '0>',
-            'age.max' => '<200'
+        DB::table('people')->insert($param);
+        return redirect('/hello');
+    }
+
+    public function edit(Request $request)
+    {
+        $item = DB::table('people')->where('id', $request->id)->first();
+        return view('hello.edit', ['form' => $item]);
+    }
+
+    public function update(Request $request)
+    {
+        $param = [
+            'name' => $request->name,
+            'mail' => $request->mail,
+            'age' => $request->age
         ];
 
-        $validator = Validator::make($request->all(), $rules, $messages);
+        DB::table('people')->where('id', $request->id)->update($param);
+        return redirect('/hello');
+    }
 
-        $validator->sometimes('age', 'min:0', function($input) {
-            return !is_int($input->age);
-        });
+    public function del(Request $request)
+    {
+        $param = ['id' => $request->id];
+        $item = DB::table('people')->where('id', $request->id)->first();
+        return view('hello.del', ['form' => $item]);
+    }
 
-        $validator->sometimes('age', 'max:200', function($input) {
-            return !is_int($input->age);
-        });
-
-        if ($validator->fails()) {
-            return redirect('/hello')
-                ->withErrors($validator)
-                ->withInput();
-        }
-
-//        $validate_rule = [
-//            'name' => 'required',
-//            'mail' => 'email',
-//            'age' => 'numeric|between:0,150'
-//        ];
-//        $this->validate($request, $validate_rule);
-        return view('hello.index', ['msg' => 'correct']);
+    public function remove(Request $request)
+    {
+        DB::table('people')->where('id', $request->id)->delete();
+        return redirect('/hello');
     }
 }
