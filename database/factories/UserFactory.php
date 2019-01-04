@@ -22,3 +22,12 @@ $factory->define(App\User::class, function (Faker $faker) {
         'remember_token' => str_random(10),
     ];
 });
+
+$factory->define(App\Person::class, function (Faker $faker) {
+    return [
+        'name' => $faker->name,
+        'mail' => $faker->unique()->safeEmail,
+        'age' => random_int(1, 99)
+    ];
+});
+

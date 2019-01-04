@@ -9,7 +9,7 @@ class BoardController extends Controller
 {
     public function index(Request $request)
     {
-        $items = Board::with('person')->get();
+        $items = Board::with('person')->simplePaginate(1);
         return view('board.index', ['items' => $items]);
     }
 
